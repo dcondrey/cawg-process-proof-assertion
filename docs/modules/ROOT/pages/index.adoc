@@ -120,3 +120,20 @@ The process proof assertion complements existing assertions:
 * `c2pa.created`: The creation time becomes cryptographically verifiable through time anchor binding
 * `c2pa.actions`: The editing sequence becomes verifiable through proof step sequentiality
 * CAWG identity assertion: Process proof demonstrates how content was created; identity assertion demonstrates who created it
+
+=== Integration with Verifiable Credentials
+
+The CAWG identity assertion supports multiple credential types including Verifiable Credentials and Verifiable Presentations (VCs/VPs). When used together with a process proof assertion, VCs/VPs enable a persistent pseudonymous identity to accumulate verifiable authorship history across multiple manifests over time, without requiring disclosure of personally identifying information.
+
+This combination answers two independent questions:
+
+* **Process proof**: "Was sequential work performed to create this content, and can the duration and sequentiality be independently verified?"
+* **Identity via VC/VP**: "Is the entity claiming authorship the same entity that claimed authorship on prior works, and can this continuity be verified without revealing their real-world identity?"
+
+Neither assertion depends on the other, but together they provide a stronger provenance signal than either alone. A process proof without identity binding proves work occurred but not who did it. An identity assertion without process proof proves who claims authorship but not that they actually performed the work.
+
+=== Cross-Manifest Continuity
+
+When an author produces multiple works over time, each manifest may contain its own process proof assertion. A validator can verify that the same persistent identity (via VCs/VPs in the identity assertion) produced verifiable sequential work (via process proofs) across a body of work. This creates a cumulative authorship record that becomes progressively harder to fabricate, since an attacker would need to generate valid sequential proofs for every claimed work in the chain.
+
+The process proof assertion does not itself implement cross-manifest linking. Cross-manifest identity continuity is provided by the VC/VP credential type in the CAWG identity assertion.
