@@ -121,19 +121,25 @@ The process proof assertion complements existing assertions:
 * `c2pa.actions`: The editing sequence becomes verifiable through proof step sequentiality
 * CAWG identity assertion: Process proof demonstrates how content was created; identity assertion demonstrates who created it
 
-=== Integration with Verifiable Credentials
+=== Integration with the Identity Assertion
 
-The CAWG identity assertion supports multiple credential types including Verifiable Credentials and Verifiable Presentations (VCs/VPs). When used together with a process proof assertion, VCs/VPs enable a persistent pseudonymous identity to accumulate verifiable authorship history across multiple manifests over time, without requiring disclosure of personally identifying information.
+The CAWG identity assertion (`cawg.identity`) allows a named actor to sign a set of `referenced_assertions` that they vouch for. When a named actor includes the process proof assertion in their `referenced_assertions`, they bind their identity to the proof that sequential work occurred. This is the strongest form of the integration: the identity assertion proves who claims authorship, and the process proof assertion proves that verifiable sequential work was performed.
 
-This combination answers two independent questions:
+The identity assertion supports multiple credential types including X.509 certificates and Verifiable Credentials/Verifiable Presentations (VCs/VPs). VCs/VPs enable a persistent pseudonymous identity to accumulate verifiable authorship history across multiple manifests over time, without requiring disclosure of personally identifying information.
+
+Neither assertion depends on the other, but together they answer two independent questions:
 
 * **Process proof**: "Was sequential work performed to create this content, and can the duration and sequentiality be independently verified?"
-* **Identity via VC/VP**: "Is the entity claiming authorship the same entity that claimed authorship on prior works, and can this continuity be verified without revealing their real-world identity?"
+* **Identity**: "Who claims authorship, and can this claim be verified?"
 
-Neither assertion depends on the other, but together they provide a stronger provenance signal than either alone. A process proof without identity binding proves work occurred but not who did it. An identity assertion without process proof proves who claims authorship but not that they actually performed the work.
+A process proof without identity binding proves work occurred but not who did it. An identity assertion without process proof proves who claims authorship but not that they actually performed the work.
+
+=== Integration with the Training and Data Mining Assertion
+
+The CAWG training and data mining assertion (`cawg.training-mining`) declares whether an asset may be used for data mining or AI/ML training. Authors who generate process proofs to demonstrate human authorship are likely also declaring training-mining preferences. These two assertions naturally co-occur in the same manifest and a named actor may include both in their identity assertion's `referenced_assertions`.
 
 === Cross-Manifest Continuity
 
 When an author produces multiple works over time, each manifest may contain its own process proof assertion. A validator can verify that the same persistent identity (via VCs/VPs in the identity assertion) produced verifiable sequential work (via process proofs) across a body of work. This creates a cumulative authorship record that becomes progressively harder to fabricate, since an attacker would need to generate valid sequential proofs for every claimed work in the chain.
 
-The process proof assertion does not itself implement cross-manifest linking. Cross-manifest identity continuity is provided by the VC/VP credential type in the CAWG identity assertion.
+The process proof assertion does not itself implement cross-manifest linking. Cross-manifest identity continuity is provided by the credential types in the CAWG identity assertion.
