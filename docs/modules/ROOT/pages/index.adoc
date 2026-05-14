@@ -1,0 +1,122 @@
+= Process Proof Assertion
+:toc: macro
+:toc-title:
+:sectanchors:
+:sectnums:
+:sectnumlevels: 5
+
+*Version 0.1 Draft {docdate}*
+
+[IMPORTANT]
+=====
+This is an early draft of a proposed CAWG assertion and is subject to change.
+=====
+
+toc::[]
+
+== Introduction
+
+C2PA manifests assert authorship and editing through `c2pa.created` and `c2pa.actions` claims, but these assertions carry no cryptographic basis beyond the signer's attestation. A process proof assertion closes this gap by cryptographically binding the editing process to a hardware-attested attestation chain and an external time anchor. Rather than expanding C2PA's scope, this assertion makes existing authorship claims verifiable.
+
+A process proof assertion shall have a label of `cawg.process-proof`.
+
+== What the Assertion Proves
+
+The assertion makes the following verifiable claims:
+
+. Sequential memory-hard computation occurred (proof of work, not elapsed time alone)
+. The computation was bounded within a declared time window
+. The computation was attested to a hardware root of trust (e.g., Secure Enclave, TPM)
+. The time claim is verifiable against an external time authority
+. The authoring process exhibits verifiable sequentiality (each step depends on prior state)
+
+The assertion does NOT prove:
+
+* Quality, correctness, originality, or creativity of the authored content
+* Authorship of specific content chunks, sections, or design elements
+* The identity of the human author (identity is asserted separately via the manifest's signing certificate or a CAWG identity assertion)
+* Absence of tool assistance, AI use, autocomplete, or other authorship aids
+* Human-in-the-loop (a device with proof capability could generate proofs autonomously)
+
+== Confidence Tiers
+
+A process proof assertion declares a confidence tier that reflects the strength of its attestation:
+
+[cols="1,2,3"]
+|===
+| Tier | Attestation | Use Case
+
+| 1 | Software-only (application signature) | Self-attestation; author claims own tool behavior
+| 2 | Hardware-backed TEE (Secure Enclave, TPM) | Platform/publisher use; proof generated in isolated hardware
+| 3 | Hardware + time anchor (TEE-attested + external timestamp) | High-stakes (legal, regulatory); maximum verifiability
+|===
+
+Validators shall publish their tier acceptance policy.
+
+== Schema
+
+The schema for this assertion type is defined by the `process-proof-map` rule in the following CDDL:
+
+[source,cddl]
+----
+process-proof-map = {
+  "proofFormat": tstr,
+  "proofTier": uint .le 3,
+  "proofBytes": bstr,
+  ? "attestationChainRef": tstr,
+  ? "timeAnchorRef": tstr,
+  ? "declaredPurpose": tstr,
+  "zeroDataCommitment": bool,
+}
+----
+
+=== Fields
+
+`proofFormat`:: A registered profile identifier (e.g., `posme`, `hat`, `vdf`) indicating which proof system was used.
+
+`proofTier`:: The confidence tier (1, 2, or 3) as described in <<_confidence_tiers>>.
+
+`proofBytes`:: The serialized proof structure, opaque to validators that do not support the declared `proofFormat`.
+
+`attestationChainRef`:: A URI or reference to the hardware attestation chain that binds the proof to a root of trust.
+
+`timeAnchorRef`:: A URI or reference to the external time authority used for time bounding.
+
+`declaredPurpose`:: The author's declared intent for generating the proof. Recommended values include `verify_human_authorship`, `regulatory_compliance`, `publisher_requirement`, and `insurance_underwriting`.
+
+`zeroDataCommitment`:: Shall be `true`. Confirms that no raw behavioral data (keystroke timing, pause duration, mouse movement, or similar biometric signals) is present in the proof or manifest.
+
+== Privacy
+
+Raw behavioral data shall never be present in the manifest or proof bytes. Keystroke timing, pause duration, mouse movement, and similar behavioral signals are personally identifying information that enables behavioral biometrics. The `zeroDataCommitment` field enforces this requirement.
+
+When a proof system uses behavioral entropy (e.g., jitter-entangled proofs), only cryptographic hashes of behavioral events are included, not the raw events. An observer can verify that entropy was bound into the proof without learning what the entropy was.
+
+== Profiles
+
+=== POSME Profile
+
+The initial profile implements the process proof capability using Proof of Sequential Memory Execution (https://github.com/dcondrey/posme-draft[draft-condrey-cfrg-posme]). POSME proves sequential work by requiring each computation step to read from prior state, perform a memory-hard operation over a Merkle tree, write to new state, and commit all transitions via a sequential root chain.
+
+=== Extensibility
+
+The schema supports alternative proof profiles. Any profile must satisfy: sequentiality, time bounding, hardware attestation, zero behavioral data, and deterministic verification. New profiles are registered through the C2PA Technical Working Group.
+
+== Validation
+
+Process proof assertions shall be validated by:
+
+. Verifying the `zeroDataCommitment` field is `true`
+. Verifying the `proofTier` is within the validator's acceptance policy
+. If the validator supports the declared `proofFormat`, deserializing and verifying `proofBytes` per the profile specification
+. If the validator does not support the declared `proofFormat`, recording an informational code and accepting the assertion as unverified
+
+Claim generators shall not redact a process proof assertion.
+
+== Relationship to Other Assertions
+
+The process proof assertion complements existing assertions:
+
+* `c2pa.created`: The creation time becomes cryptographically verifiable through time anchor binding
+* `c2pa.actions`: The editing sequence becomes verifiable through proof step sequentiality
+* CAWG identity assertion: Process proof demonstrates how content was created; identity assertion demonstrates who created it
