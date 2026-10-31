@@ -23,7 +23,7 @@ The assertion binds authoring activity to a hardware-attested attestation chain 
 - **Time bounded**: Claimed duration is verifiable against an external time authority
 - **Hardware attested**: Proof generation is attested to a hardware root of trust
 - **Privacy preserving**: No raw behavioral data (keystroke timing, mouse movement, etc.) enters the manifest
-- **Profile extensible**: POSME is the initial proof system; alternative profiles can be registered
+- **Profile extensible**: CPoE (the evidence packet, `application/cpoe+cbor`) is the initial profile; alternative profiles can be registered
 
 ## Confidence Tiers
 
@@ -41,7 +41,7 @@ The full specification is in [docs/modules/ROOT/pages/index.adoc](docs/modules/R
 
 | Resource | Description |
 |----------|-------------|
-| [POSME Internet-Draft](https://github.com/dcondrey/posme-draft) | The cryptographic primitive (IETF CRWG) |
+| [CPoE Internet-Drafts](https://github.com/LF-Decentralized-Trust-labs/proof-of-effort) | The evidence packet and its appraisal (protocol, appraisal, anchoring drafts) |
 | [C2PA Specification](https://c2pa.org/specifications/) | Content provenance standard |
 | [CAWG Identity Assertion](https://cawg.io/identity/) | Complements process proof with identity binding |
 

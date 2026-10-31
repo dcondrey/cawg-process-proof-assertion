@@ -18,7 +18,7 @@ toc::[]
 
 C2PA manifests assert authorship and editing through `c2pa.created` and `c2pa.actions` claims, but these assertions carry no cryptographic basis beyond the signer's attestation. A process proof assertion closes this gap by cryptographically binding the editing process to a hardware-attested attestation chain and an external time anchor. Rather than expanding C2PA's scope, this assertion makes existing authorship claims verifiable.
 
-A process proof assertion shall have a label of `cawg.process-proof`.
+A process proof assertion shall have a label of `cawg.process-proof`. Until this label is adopted, implementations emit the same structure under the vendor label `com.writerslogic.process-proof`; a validator that supports this assertion should treat the two labels identically.
 
 == What the Assertion Proves
 
@@ -40,18 +40,19 @@ The assertion does NOT prove:
 
 == Confidence Tiers
 
-A process proof assertion declares a confidence tier that reflects the strength of its attestation:
+A process proof assertion declares a confidence tier that reflects the strength of its attestation. The ladder is the `attestation-tier` of the CPoE protocol (draft-condrey-cpoe-protocol), so a validator reads the same value from the assertion and from the evidence packet it carries:
 
 [cols="1,2,3"]
 |===
 | Tier | Attestation | Use Case
 
 | 1 | Software-only (application signature) | Self-attestation; author claims own tool behavior
-| 2 | Hardware-backed TEE (Secure Enclave, TPM) | Platform/publisher use; proof generated in isolated hardware
-| 3 | Hardware + time anchor (TEE-attested + external timestamp) | High-stakes (legal, regulatory); maximum verifiability
+| 2 | Attested software (platform attestation of the capturing application) | Platform/publisher use where no hardware key is available
+| 3 | Hardware-bound (Secure Enclave, TPM) | Platform/publisher use; proof generated in isolated hardware
+| 4 | Hardware-hardened (hardware-bound plus external time anchor) | High-stakes (legal, regulatory); maximum verifiability
 |===
 
-Validators shall publish their tier acceptance policy.
+Validators shall publish their tier acceptance policy. The tier describes how the proof was attested; it is not the outcome of appraising it. A validator's appraisal yields a verdict in the appraisal specification's own vocabulary (`authentic`, `inconclusive`, `suspicious` or `invalid` for CPoE), and the assertion carries no verdict of its own.
 
 == Schema
 
@@ -61,7 +62,7 @@ The schema for this assertion type is defined by the `process-proof-map` rule in
 ----
 process-proof-map = {
   "proofFormat": tstr,
-  "proofTier": uint .le 3,
+  "proofTier": uint .le 4,
   "proofBytes": bstr,
   ? "attestationChainRef": tstr,
   ? "timeAnchorRef": tstr,
@@ -72,9 +73,9 @@ process-proof-map = {
 
 === Fields
 
-`proofFormat`:: A registered profile identifier (e.g., `posme`, `hat`, `vdf`) indicating which proof system was used.
+`proofFormat`:: A registered profile identifier (e.g., `cpoe`) naming the specification `proofBytes` is verified under.
 
-`proofTier`:: The confidence tier (1, 2, or 3) as described in <<_confidence_tiers>>.
+`proofTier`:: The confidence tier (1 to 4) as described in <<_confidence_tiers>>.
 
 `proofBytes`:: The serialized proof structure, opaque to validators that do not support the declared `proofFormat`.
 
@@ -94,13 +95,13 @@ When a proof system uses behavioral entropy (e.g., jitter-entangled proofs), onl
 
 == Profiles
 
-=== POSME Profile
+=== CPoE Profile
 
-The initial profile implements the process proof capability using Proof of Sequential Memory Execution (https://github.com/dcondrey/posme-draft[draft-condrey-cfrg-posme]). POSME proves sequential work by requiring each computation step to read from prior state, perform a memory-hard operation over a Merkle tree, write to new state, and commit all transitions via a sequential root chain.
+The initial profile is `cpoe`: `proofBytes` is a COSE-signed evidence packet under the Cryptographic Proof of Effort protocol (https://github.com/LF-Decentralized-Trust-labs/proof-of-effort[draft-condrey-cpoe-protocol]), media type `application/cpoe+cbor`, and it is appraised under the companion appraisal specification (draft-condrey-cpoe-appraisal). The packet names its own sequential-work function in its `proof-algorithm` field, so the function in use (a memory-hard construction today, its successor later) is a property of the packet, not of this assertion; replacing one with the other changes nothing here.
 
 === Extensibility
 
-The schema supports alternative proof profiles. Any profile must satisfy: sequentiality, time bounding, hardware attestation, zero behavioral data, and deterministic verification. New profiles are registered through the C2PA Technical Working Group.
+The schema supports alternative proof profiles. Any profile must satisfy: sequentiality, time bounding, hardware attestation, zero behavioral data, and deterministic verification. New profiles are registered through the Creator Assertions Working Group.
 
 == Validation
 
@@ -108,7 +109,7 @@ Process proof assertions shall be validated by:
 
 . Verifying the `zeroDataCommitment` field is `true`
 . Verifying the `proofTier` is within the validator's acceptance policy
-. If the validator supports the declared `proofFormat`, deserializing and verifying `proofBytes` per the profile specification
+. If the validator supports the declared `proofFormat`, deserializing and verifying `proofBytes` per the profile specification, and recording the resulting verdict as the assertion's validation status
 . If the validator does not support the declared `proofFormat`, recording an informational code and accepting the assertion as unverified
 
 Claim generators shall not redact a process proof assertion.
