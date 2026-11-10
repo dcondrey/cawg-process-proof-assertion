@@ -1,0 +1,27 @@
+{
+	"version": 1,
+	"profile": "https://example.org/process-evidence/demo",
+	"profileVersion": "discussion-1",
+	"subject": {
+		"representation": "utf8-exact",
+		"sha256": {
+			"hex": "0d77da68bd550577379f4b681694dac9c3d95950e8026e9ec92cf31256236954"
+		},
+		"byteLength": 17
+	},
+	"context": {
+		"hex": "000102030405060708090a0b0c0d0e0f"
+	},
+	"evidenceHash": {
+		"hex": "2782a3540c24af919856496cbdc5b477c62067410d219f86e2d0c728eb92b074"
+	},
+	"evidence": {
+		"externalAssertion": {
+			"url": "self#jumbf=c2pa.assertions/c2pa.external-reference",
+			"alg": "sha256",
+			"hash": {
+				"hex": "0000000000000000000000000000000000000000000000000000000000000000"
+			}
+		}
+	}
+}

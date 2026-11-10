@@ -1,0 +1,9 @@
+{
+	"source_repository": "https://github.com/writerslogic/writersproof",
+	"source_revision": "c8962052df50398846bf8c2cea66aeff5d9fd590",
+	"source_path": "crates/cpoe-protocol/tests/fixtures/text-proof-block.txt",
+	"source_sha256": "bf55395fe75dcfd8e890e16b33fa76716ae4b8cda9c72990773948518df32b23",
+	"manifest_sha256": "3fda7d9649ef18a3da58b28b9b792dec278d7dd71eca709e065ce7ad48e84703",
+	"synthetic": true,
+	"description": "Committed producer fixture; public test signing key; no captured checkpoints. Not evidence of human authorship."
+}

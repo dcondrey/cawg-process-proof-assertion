@@ -1,0 +1,25 @@
+process-proof-map = {
+	"version": 1,
+	"profile": tstr .size (1..2048),
+	"profileVersion": tstr .size (1..128),
+	"subject": {
+		"representation": "utf8-exact",
+		"sha256": bstr .size 32,
+		"byteLength": uint
+	},
+	"context": bstr .size (16..64),
+	"evidenceHash": bstr .size 32,
+	"evidence": evidence-source
+}
+
+evidence-source = {
+	"bytes": bstr .size (1..16777216)
+} / {
+	"externalAssertion": sha256-hashed-uri
+}
+
+sha256-hashed-uri = {
+	"url": tstr .size (1..2048),
+	"alg": "sha256",
+	"hash": bstr .size 32
+}
