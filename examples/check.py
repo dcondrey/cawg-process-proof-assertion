@@ -84,10 +84,14 @@ def check_schema():
             )
             if (result.returncode == 0) != valid:
                 raise AssertionError(f"{name}: unexpected schema result: {result.stderr[:1000]}")
+            if not valid and (result.returncode != 1 or "[ERROR] Validation of" not in result.stderr):
+                raise AssertionError(f"{name}: validator failed without a schema rejection: {result.stderr[:1000]}")
             count += 1
 
         for name, expected in (("inline", envelope()), ("external", external_envelope())):
-            actual = cbor2.loads((ROOT / f"{name}.cbor").read_bytes())
+            encoded = (ROOT / f"{name}.cbor").read_bytes()
+            assert encoded == cbor2.dumps(expected, canonical=True)
+            actual = cbor2.loads(encoded)
             assert actual == expected
             assert json.loads((ROOT / f"{name}.display.json").read_text()) == display(actual)
             check(name, actual, True)
@@ -128,6 +132,33 @@ def check_schema():
             value = envelope()
             value["subject"]["byteLength"] = length
             check(f"subject byte length {length}", value, length >= 0)
+
+        for length in (0, 1, 2, 2047, 2048, 2049):
+            value = external_envelope()
+            value["evidence"]["externalAssertion"]["url"] = "x" * length
+            check(f"external reference length {length}", value, 1 <= length <= 2048)
+
+        for field, invalid in (("version", True), ("context", "00" * 16),
+                               ("evidenceHash", "00" * 32), ("profileVersion", 1)):
+            value = envelope()
+            value[field] = invalid
+            check(f"wrong type for {field}", value, False)
+
+        for field, invalid in (("byteLength", True), ("byteLength", 1.5),
+                               ("sha256", "00" * 32)):
+            value = envelope()
+            value["subject"][field] = invalid
+            check(f"wrong subject {field}: {type(invalid).__name__}", value, False)
+
+        for field in ("representation", "sha256", "byteLength"):
+            value = envelope()
+            del value["subject"][field]
+            check(f"missing subject {field}", value, False)
+
+        for field in ("url", "alg", "hash"):
+            value = external_envelope()
+            del value["evidence"]["externalAssertion"][field]
+            check(f"missing external reference {field}", value, False)
 
         value = envelope()
         value["evidence"].update(external_envelope()["evidence"])

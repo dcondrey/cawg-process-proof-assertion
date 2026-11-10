@@ -12,6 +12,8 @@ A reader should be able to identify the evidence accompanying a document, determ
 
 The [draft](docs/modules/ROOT/pages/index.adoc) describes a profile identifier, an exact content binding, a context, and inline or referenced evidence. A profile defines the evidence's meaning and complete verification procedure. The group should decide whether this needs a new assertion or can be expressed as a profile of existing mechanisms.
 
+For example, a publisher receiving a revised description should be able to check that its evidence covers that exact text, see whether it records selected checkpoints or a complete declared history, and distinguish those checks from an editor's approval declaration. Missing content or missing proof inputs must remain visible in the result.
+
 **A checked history does not establish human authorship.** Automation can construct a valid edit history. A signature identifies a key holder's statement; hardware key protection does not by itself attest the capture application. Time anchors and privacy properties need their own evidence and assumptions.
 
 ## Candidate profiles

@@ -24,6 +24,12 @@ This proposal describes a common envelope and verification contract for evidence
 
 The name "process proof" does not mean proof of human authorship. A valid signature authenticates a statement from a key holder. A valid computation proof supports the relation specified by its profile, under that proof system's assumptions. Neither establishes who physically typed the text, why an edit was made, or whether AI was involved.
 
+=== Publishing example
+
+An author supplies a revised description and process evidence to a publisher. The publisher needs to know whether the evidence covers that exact revision, which checks succeeded, and which assumptions remain. If the description changes after export, its earlier evidence must not silently carry forward as evidence for the new text.
+
+A reader could report: "The supplied evidence passes the selected profile's checks and matches this text; capture origin and editing time have not been established." If the publisher separately declares that an editor approved the description, that declaration needs its own scope, signer and supporting record. A valid edit history alone does not establish editorial review.
+
 == What is already available
 
 [cols="2,3,3",options="header"]
@@ -43,7 +49,7 @@ The name "process proof" does not mean proof of human authorship. A valid signat
 | How does a publication carry evidence that another implementation can interpret and verify?
 |===
 
-The gap is a shared verification contract, not a missing place to store a log or a missing signature format. A digest can establish that the reader obtained the referenced bytes without defining what those bytes demonstrate.
+The gap is a shared verification contract. A reader can retrieve digest-matching bytes from two tools while one tool supplies signed checkpoint snapshots and the other supplies a proof of an editing computation. Those artifacts support different conclusions. A common contract would identify the relation and inputs, select the verifier, and explain its result. Existing transport and signatures remain useful in both cases.
 
 Two designs should be evaluated: a separate assertion with the envelope below, or a profile of existing assertions that carries equivalent information. If the latter gives independent implementations the same results, a new CAWG label is unnecessary. This proposal asks the group to settle that choice before freezing a wire format.
 
@@ -75,16 +81,11 @@ Sequential work, memory cost, elapsed time, and editing-history consistency are 
 
 == Proposed envelope
 
-The capitalized requirements describe this proposed design, not existing CAWG requirements. The CDDL is maintained in one source file:
-
-[source,cddl]
-----
-include::partial$process-proof.cddl[]
-----
+Uppercase requirement words use the meanings in https://www.rfc-editor.org/rfc/rfc2119[RFC 2119] and https://www.rfc-editor.org/rfc/rfc8174[RFC 8174]. They describe this proposed design, not existing CAWG requirements. The https://github.com/dcondrey/cawg-process-proof-assertion/blob/main/docs/modules/ROOT/partials/process-proof.cddl[CDDL source] defines the CBOR envelope. The field descriptions below add requirements that a schema validator alone cannot check.
 
 `version`:: Envelope version, distinct from this document's revision and the selected evidence profile.
 
-`profile` and `profileVersion`:: An absolute URI identifying a profile and an immutable revision identifier. A validator MUST select a locally supported definition, including fixed algorithms and parameters. It MUST NOT execute or trust a definition downloaded from a producer-supplied URI. A revision must change when its interpretation changes.
+`profile` and `profileVersion`:: An absolute URI identifying a profile and an immutable revision identifier. A validator MUST select a locally supported definition, including fixed algorithms and parameters. It MUST NOT execute or trust a definition downloaded from a producer-supplied URI, or substitute a different revision when verification fails. A revision must change when its interpretation changes.
 
 `subject`:: The SHA-256 digest and byte length of the covered text. This first design supports `utf8-exact`: valid UTF-8, without normalization, trimming, newline conversion, or rendered-text extraction. A byte-order mark, if present, is content. The profile MUST define how this text is selected from the presented asset and how that selection is authenticated. Initial experiments use a plain-text asset with a detached manifest. An embedded transport needs an explicit mapping for its excluded wrapper; a broad hash exclusion is insufficient. RTF, PDF, HTML and EPUB require additional mappings before this envelope can claim to cover their text.
 
@@ -94,9 +95,28 @@ include::partial$process-proof.cddl[]
 
 `evidence`:: Exactly one inline byte string or a hashed reference to a `c2pa.external-reference` assertion in the same manifest. In the latter case the external assertion MUST use a hashed location, and both reference digests and `evidenceHash` MUST be checked. Retrieval is a separate application operation; basic manifest validation does not require it. See {c2pa}#external_reference_assertion[§16.4.2].
 
-The 16 MiB inline-evidence limit is a proposed transport bound, not a claim about proof efficiency. External evidence and subject processing still need explicit implementation and profile resource limits. Duplicate map keys, unknown envelope fields, invalid lengths, unsupported versions and malformed references MUST NOT produce a successful process result.
+The 16 MiB inline-evidence limit is a proposed transport bound, not a claim about proof efficiency. External evidence and subject processing still need explicit implementation and profile resource limits. The payload MUST contain exactly one CBOR map, without trailing data or duplicate keys at any depth. Unknown envelope fields, invalid lengths, unsupported versions and malformed references MUST NOT produce a successful process result.
 
 `cawg.process-proof` remains a proposed name. No experiment may represent it as allocated. An implementation of this envelope would need a distinct entity-controlled label until agreement on ownership and syntax. The existing WritersProof label is not an alias for this design.
+
+=== Profile contract
+
+A profile definition MUST identify:
+
+* Its immutable revision, exact evidence encoding, public inputs, algorithms and parameter limits.
+* The relation or signed statement being checked, its trust assumptions, and what counts as complete verification. Evidence integrity and statistical appraisal must remain distinguishable.
+* How the subject, context, relation and parameters are authenticated or derived from authenticated inputs. An exporter cannot attach stronger semantics to an old proof by adding unsigned metadata.
+* The permitted initial state, covered interval or event range, and treatment of missing observations. Snapshots at selected checkpoints do not establish every intervening edit.
+* Its disclosure and linkage properties, resource limits, and treatment of unavailable evidence or public inputs.
+* Positive vectors and rejection cases that independent implementations can reproduce, with any research limitations stated separately from measured test results.
+
+Agreement on a profile is still required. This envelope does not create a registry or establish the security of a candidate proof system.
+
+=== Binding to the publication and its signer
+
+The subject mapping MUST connect the evidence's authenticated content to the asset whose enclosing hard binding was validated. For the initial detached plain-text case, that means all bytes of the supplied text file. An evidence digest, an asset filename, or two declarations repeating the same hash do not establish this connection on their own.
+
+When a named actor signs this process assertion through `cawg.identity`, its `referenced_assertions` MUST identify the process assertion and the required hard-binding assertion under {identity}#_referenced_assertions_requirements[CAWG Identity §5.1.1]. The manifest signer, evidence signer and named actor may be different parties. A verifier MUST NOT treat a valid manifest signature as establishing the evidence signer's identity or the named actor's role in the observed process.
 
 == Verification and presentation
 
@@ -105,8 +125,9 @@ A verifier evaluating this proposal MUST:
 . Validate the enclosing credential using its own specification, preserving failures and signer-trust results.
 . Check the envelope and select an explicitly supported profile revision. Unknown profiles are unsupported, not verified.
 . Obtain the evidence within configured limits. Missing evidence is unavailable, not fabricated or invalid by inference. A failed digest or signature is a failure, not absence.
+. Require all inputs needed by the selected profile. If the document is a required public input and is unavailable, report that the proof has not been evaluated. Available signatures or digests may still be checked separately.
 . Run the profile's complete procedure and compare its authenticated subject and context with the envelope. Comparing two unsigned fields is insufficient. Declared tiers, appraisal scores, or labels cannot replace these checks.
-. Compare the supplied content with that authenticated subject under the profile's mapping. Without the content, report that content matching has not been performed.
+. Validate the covered text as UTF-8 and compare both its SHA-256 digest and byte length with that authenticated subject under the profile's mapping. Without the delivered content, report that content matching has not been performed, even if a copy of the text inside the evidence allowed proof verification.
 . Report the precise checked relation and remaining assumptions. Keep evidence integrity, content matching, proof checks, signer trust, capture-origin assurance, and time evidence separate. A proof-only result MUST NOT be presented as a document match.
 
 The result vocabulary is an application design, not a registration of C2PA status codes. Useful distinctions include verified under a supported profile, experimental verification, invalid evidence, unsupported profile, unavailable evidence, missing content, and not evaluated because of resource limits. Local policy may decline an otherwise valid profile without claiming its mathematics failed.
@@ -121,9 +142,9 @@ Profiles MUST bound parsing, decompression, allocation and verification work bef
 
 The https://github.com/LF-Decentralized-Trust-labs/proof-of-effort[CPoE work] separates evidence packets from appraisal. A candidate profile should pin one encoding, its signatures and checkpoint checks, its content mapping, and any optional work-proof algorithm. A claimed attestation tier is input to appraisal, not a verified assurance level. The four current tier names (software-only, attested software, hardware-bound and hardware-hardened) are not C2PA certification levels and do not establish time or capture properties on their own.
 
-WritersProof's current source defines `com.writerslogic.process-proof` as a version-2 application assertion containing `evidenceId`, `evidenceHash` and optional appraisal fields. It does *not* encode the earlier draft's `proofFormat`, `proofTier`, `proofBytes` and `zeroDataCommitment` structure. Some paths also carry checkpoint summaries or external evidence references. An adapter must validate the actual signed evidence, its subject, its encoding and its context; renaming the application assertion is insufficient.
+The reviewed WritersProof implementation (`crates/cpoe-protocol/src/c2pa/types.rs`, revision `c8962052df50398846bf8c2cea66aeff5d9fd590`) defines `com.writerslogic.process-proof` as a version-2 application assertion containing `evidenceId`, `evidenceHash` and optional appraisal fields. It does *not* encode the earlier draft's `proofFormat`, `proofTier`, `proofBytes` and `zeroDataCommitment` structure. Some paths also carry checkpoint summaries or external evidence references. An adapter must validate the actual signed evidence, its subject, its encoding and its context; renaming the application assertion is insufficient.
 
-The repository's `examples/writersproof/` directory retains a synthetic producer-generated proof block with zero checkpoints, its extracted manifest, source digests, and an independent reader report. The reader parses the application assertion and verifies signature/assertion-hash checks, but reports an invalid overall result. Its standalone read cannot validate the document binding and also reports a claim-label problem and an untrusted test certificate. The accompanying check reproduces the text digest separately. There is no supplied process-evidence payload to validate against `evidenceHash`.
+The https://github.com/dcondrey/cawg-process-proof-assertion/tree/main/examples[examples] retain a synthetic producer-generated fixture, source digests and an independent reader report. The reader's overall result is invalid; the examples document the individual successes and failures. The fixture has zero captured checkpoints and supplies no process-evidence payload to check against `evidenceHash`.
 
 This is a migration example, not a conforming implementation of the proposed envelope or a record of human writing. A successful deployment example still needs a conforming enclosing credential, a documented evidence profile, and independent checks of content, context and evidence.
 
@@ -164,12 +185,15 @@ These are requirements for a future complete implementation. The examples in thi
 |===
 | Case | Required distinction
 | Supported evidence, matching content and context, complete checks pass | Report the exact verified relation and its trust assumptions.
-| Valid evidence but no document supplied | Evidence checks may pass; document matching remains unperformed.
+| Evidence supplied but no delivered document | Checks whose inputs are available may pass; document matching remains unperformed.
+| A required public input is missing | The affected proof check remains unevaluated; do not convert a signature-only check into proof verification.
 | Another document or a later revision is supplied | Report content mismatch even if the evidence's signature remains valid.
+| Evidence covers only selected checkpoints or a partial session | Report that coverage; do not describe it as a complete edit history.
 | Evidence bytes, session/context or profile revision are substituted | Reject the failed binding or report unsupported interpretation; never reuse the old success.
 | Evidence is absent or an external service is offline | Report unavailable; do not infer fraud or AI use.
 | Unknown profile, excessive resource demand or incomplete proof | Unsupported, not evaluated, or invalid as appropriate; no verified fallback.
 | Valid synthetic history | Computation checks may pass; no human-authorship conclusion follows.
+| A verified history accompanies a declaration of editorial approval | Report the history result and approval declaration separately; the history does not establish the review.
 | ECHO r8 research vector passes | Report experimental verification under the pinned research assumptions.
 |===
 
