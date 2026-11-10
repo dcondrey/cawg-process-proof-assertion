@@ -1,0 +1,154 @@
+{
+  "active_manifest": "urn:cpoe:65653633303931353431383733316266",
+  "manifests": {
+    "urn:cpoe:65653633303931353431383733316266": {
+      "claim": {
+        "instanceID": "xmp:iid:65653633303931353431383733316266",
+        "claim_generator_info": {
+          "name": "WritersProof",
+          "version": "fixture",
+          "specVersion": "2.4.0"
+        },
+        "signature": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.signature",
+        "created_assertions": [
+          {
+            "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/c2pa.actions.v2",
+            "alg": "sha256",
+            "hash": "UX5K3Rj9dpIxENdDxmt/yUNtcet0YgdPUGdu//aI3Ks="
+          },
+          {
+            "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/c2pa.hash.data",
+            "alg": "sha256",
+            "hash": "Bv8s30LJU/WC6c+UTLe5Sd6n75F3B5sD4TjRjSSWPj8="
+          },
+          {
+            "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/com.writerslogic.process-proof",
+            "alg": "sha256",
+            "hash": "6tHVuYuHOJaqO35BEb9jDEVCIz9Mdn2NK24vunhUGGI="
+          },
+          {
+            "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/com.writerslogic.evidence-chain",
+            "alg": "sha256",
+            "hash": "E3xfksl0YLI7AsXwp340bDxcjST5k71lys4IuegNBLQ="
+          },
+          {
+            "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/com.writersproof.docinfo",
+            "alg": "sha256",
+            "hash": "cRiti+2WD38HUrhDjzTQeMUzHORRyqHckKGmRofqKx0="
+          }
+        ],
+        "alg": "sha256",
+        "claim_version": 2
+      },
+      "assertion_store": {
+        "com.writerslogic.evidence-chain": {
+          "version": 1,
+          "checkpointCount": 0,
+          "chainDurationSec": 0.0,
+          "seals": []
+        },
+        "c2pa.actions.v2": {
+          "actions": [
+            {
+              "action": "c2pa.created",
+              "when": "2026-09-03T00:00:00+00:00",
+              "softwareAgent": {
+                "name": "WritersProof",
+                "version": "fixture",
+                "specVersion": "2.4.0"
+              },
+              "description": "Document authored with WritersProof Proof-of-Effort witnessing",
+              "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/humanCreation"
+            }
+          ],
+          "allActionsIncluded": true
+        },
+        "com.writerslogic.process-proof": {
+          "version": 2,
+          "evidenceId": "65653633303931353431383733316266",
+          "evidenceHash": "dc26d66ed0ef0b9d8ac5fbce73a6dd765e5f8cbd7833e92c18a66268c65489f9"
+        },
+        "com.writersproof.docinfo": {
+          "dc:format": "text/plain"
+        },
+        "c2pa.hash.data": {
+          "name": "document",
+          "hash": "7mMJFUGHMb88HsgmopA+E6X6BQt21LSnth1Oz5htQwI=",
+          "alg": "sha256",
+          "exclusions": [
+            {
+              "start": 189,
+              "length": 3863
+            }
+          ],
+          "pad": []
+        }
+      },
+      "signature": {
+        "alg": "ed25519",
+        "issuer": "WritersLogic",
+        "common_name": "WritersProof CPoE Signer"
+      }
+    }
+  },
+  "validation_results": {
+    "activeManifest": {
+      "success": [
+        {
+          "code": "claimSignature.insideValidity",
+          "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.signature",
+          "explanation": "claim signature valid"
+        },
+        {
+          "code": "claimSignature.validated",
+          "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.signature",
+          "explanation": "claim signature valid"
+        },
+        {
+          "code": "assertion.hashedURI.match",
+          "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/c2pa.actions.v2",
+          "explanation": "hashed uri matched: self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/c2pa.actions.v2"
+        },
+        {
+          "code": "assertion.hashedURI.match",
+          "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/c2pa.hash.data",
+          "explanation": "hashed uri matched: self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/c2pa.hash.data"
+        },
+        {
+          "code": "assertion.hashedURI.match",
+          "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/com.writerslogic.process-proof",
+          "explanation": "hashed uri matched: self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/com.writerslogic.process-proof"
+        },
+        {
+          "code": "assertion.hashedURI.match",
+          "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/com.writerslogic.evidence-chain",
+          "explanation": "hashed uri matched: self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/com.writerslogic.evidence-chain"
+        },
+        {
+          "code": "assertion.hashedURI.match",
+          "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/com.writersproof.docinfo",
+          "explanation": "hashed uri matched: self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/com.writersproof.docinfo"
+        }
+      ],
+      "informational": [],
+      "failure": [
+        {
+          "code": "claim.malformed",
+          "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266",
+          "explanation": "claim box label invalid"
+        },
+        {
+          "code": "signingCredential.untrusted",
+          "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.signature",
+          "explanation": "signing certificate untrusted"
+        },
+        {
+          "code": "assertion.dataHash.mismatch",
+          "url": "self#jumbf=/c2pa/urn:cpoe:65653633303931353431383733316266/c2pa.assertions/c2pa.hash.data",
+          "explanation": "asset hash error, name: document, error: bad parameter: The exclusion range exceed the data length"
+        }
+      ]
+    }
+  },
+  "validation_state": "Invalid"
+}
