@@ -64,7 +64,7 @@ def write_examples():
     for name, value in (("inline", envelope()), ("external", external_envelope())):
         (ROOT / f"{name}.cbor").write_bytes(cbor2.dumps(value, canonical=True))
         (ROOT / f"{name}.display.json").write_text(
-            json.dumps(display(value), indent=2) + "\n"
+            json.dumps(display(value), indent="\t") + "\n"
         )
 
 

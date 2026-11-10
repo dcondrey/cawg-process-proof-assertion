@@ -1,15 +1,6 @@
-<!-- repo-header:start -->
-<h3 align="center">Process Proof Assertion</h3>
+### Process Proof Assertion
 
-<p align="center"><strong>A proposal for interoperable evidence of content creation and revision</strong></p>
-
-<p align="center">
-  <a href="docs/modules/ROOT/pages/index.adoc"><img src="https://img.shields.io/badge/status-independent%20proposal-6a4c93?style=flat-square&labelColor=20232a" alt="Independent proposal"></a>
-  <a href="https://github.com/sponsors/dcondrey"><img src="https://img.shields.io/badge/GitHub%20Sponsors-Sponsor-EA4AAA?style=flat-square&labelColor=20232a" alt="GitHub Sponsors"></a>
-</p>
-<!-- repo-header:end -->
-
----
+A proposal for interoperable evidence of content creation and revision.
 
 ## Status
 
